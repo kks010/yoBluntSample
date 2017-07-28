@@ -11,7 +11,7 @@ import android.view.ViewGroup;
  * Created by Kunal on 26-07-2017.
  */
 
-class DemoFragment extends Fragment {
+public class DemoFragment extends Fragment {
 
     View inflatedView = null;
 

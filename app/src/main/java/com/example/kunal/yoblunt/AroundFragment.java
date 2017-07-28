@@ -3,6 +3,8 @@ package com.example.kunal.yoblunt;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.net.Uri;
@@ -38,17 +40,19 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
 /**
  * Created by Kunal on 26-07-2017.
  */
 
-class AroundFragment extends Fragment implements OnMapReadyCallback, JsonAdapter.positionSetListener, LocationListener {
+public class AroundFragment extends Fragment implements OnMapReadyCallback, JsonAdapter.positionSetListener, LocationListener {
 
     View inflatedView = null;
 
@@ -81,6 +85,7 @@ class AroundFragment extends Fragment implements OnMapReadyCallback, JsonAdapter
     private ArrayList<Double> mDistance;
 
     public List<CardData> mCardDataList;
+    private String title;
 
 
     @Override
@@ -130,7 +135,8 @@ class AroundFragment extends Fragment implements OnMapReadyCallback, JsonAdapter
         LatLng position = new LatLng(latitude, longitude);
 
 
-        marker = googleMap.addMarker(new MarkerOptions().position(position).title("Marker at new position"));
+        MarkerOptions markerOptions =new MarkerOptions().position(position).title("Marker at new position");
+        marker = googleMap.addMarker(markerOptions);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, zoom));
 
         googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
@@ -250,13 +256,30 @@ class AroundFragment extends Fragment implements OnMapReadyCallback, JsonAdapter
 
             if (marker != null) {
 
-                marker.setPosition(position);       //issue while adding marker again
+                marker.setPosition(position);
+                getTitle(latitude,longitude);
+                marker.setTitle(title);
+                marker.showInfoWindow();
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, zoom));
 
             }
 
         }
 
+    }
+
+    private void getTitle(double latitude, double longitude) {
+        Geocoder geocoder;
+        List<Address> addresses = null;
+        geocoder = new Geocoder(getActivity().getApplicationContext(), Locale.getDefault());
+
+        try {
+            addresses = geocoder.getFromLocation(latitude,longitude, 1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        title = addresses.get(0).getLocality();
     }
 
     //for location
