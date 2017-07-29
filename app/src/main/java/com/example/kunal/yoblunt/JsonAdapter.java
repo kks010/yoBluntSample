@@ -13,6 +13,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -29,32 +32,11 @@ class JsonAdapter extends android.support.v7.widget.RecyclerView.Adapter<JsonAda
 
     public positionSetListener listener;
 
-    public int pos;
-    private Bitmap image;
-
     public Double markerLat;
     public Double markerLong;
 
     public List<CardData> mReceivedCardDataList;
     public int size;
-
-//    private ArrayList<String> mReceivedTitle;
-//    private ArrayList<String> mReceivedTag;
-//    private ArrayList<String> mReceivedThumbnail;
-//    private ArrayList<Double> mReceivedLat;
-//    private ArrayList<Double> mReceivedLong;
-
-//    public JsonAdapter(ArrayList<String> mTitle, ArrayList<String> mTag, ArrayList<String> mThumbnail,
-//                       ArrayList<Double> mLat, ArrayList<Double> mLong, positionSetListener positionSetListener) {
-//
-//        mReceivedTitle=mTitle;
-//        mReceivedTag=mTag;
-//        mReceivedThumbnail=mThumbnail;
-//        mReceivedLat=mLat;
-//        mReceivedLong=mLong;
-//        this.listener = positionSetListener;
-//
-//    }
 
     public JsonAdapter(List<CardData> mCardDataList, int mSize, positionSetListener positionSetListener) {
         mReceivedCardDataList=mCardDataList;
@@ -81,23 +63,12 @@ class JsonAdapter extends android.support.v7.widget.RecyclerView.Adapter<JsonAda
         holder.mTitle.setText(mReceivedCardDataList.get(position).title);
         holder.mTag.setText(mReceivedCardDataList.get(position).tag);
 
-        pos=position;
-
-        Thread thread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                try  {
-                    image=getBitmapFromURL(mReceivedCardDataList.get(pos).thumbnail);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        thread.start();
-
-        holder.mThumbnail.setImageBitmap(image);
+        Glide.with(holder.mCardView.getContext())
+                .load(mReceivedCardDataList.get(position).thumbnail)
+                .thumbnail(0.5f)
+                .crossFade()
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(holder.mThumbnail);
 
         if(listener!=null) {
             listener.getPosition(markerLat, markerLong);
@@ -136,24 +107,6 @@ class JsonAdapter extends android.support.v7.widget.RecyclerView.Adapter<JsonAda
             mThumbnail=(ImageView)v.findViewById(R.id.thumbnail_horizontal_bar);
             mCardView=(CardView) v.findViewById(R.id.card_view);
 
-        }
-    }
-
-    public static Bitmap getBitmapFromURL(String src) {
-        try {
-            Log.e("src",src);
-            URL url = new URL(src);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput(true);
-            connection.connect();
-            InputStream input = connection.getInputStream();
-            Bitmap myBitmap = BitmapFactory.decodeStream(input);
-            Log.e("Bitmap","returned");
-            return myBitmap;
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e("Exception",e.getMessage());
-            return null;
         }
     }
 
